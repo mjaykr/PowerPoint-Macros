@@ -1,0 +1,44 @@
+Sub AddOrUpdateSlideNumber_X_of_XX()
+    Dim sld As Slide
+    Dim shp As Shape
+    Dim totalSlides As Integer
+    Dim slideText As String
+    Dim boxName As String
+    Dim existingBox As Shape
+    Dim slideIndex As Integer
+
+    totalSlides = ActivePresentation.Slides.Count
+    boxName = "SlideNumberBox"
+
+    For Each sld In ActivePresentation.Slides
+        slideIndex = sld.SlideIndex
+        slideText = slideIndex & " / " & totalSlides
+        Set existingBox = Nothing
+
+        ' Try to find existing named shape
+        On Error Resume Next
+        Set existingBox = sld.Shapes(boxName)
+        On Error GoTo 0
+
+        ' Update if exists
+        If Not existingBox Is Nothing Then
+            existingBox.TextFrame.TextRange.Text = slideText
+        Else
+            ' Else add new textbox
+            Set shp = sld.Shapes.AddTextbox( _
+                Orientation:=msoTextOrientationHorizontal, _
+                Left:=sld.Master.Width - 120, _
+                Top:=sld.Master.Height - 30, _
+                Width:=100, Height:=20)
+            With shp
+                .Name = boxName
+                .TextFrame.TextRange.Text = slideText
+                .TextFrame.TextRange.Font.Size = 10
+                .TextFrame.TextRange.Font.Name = "Arial"
+                .TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignRight
+            End With
+        End If
+    Next sld
+
+    MsgBox "Slides numbered in format: x / xx", vbInformation
+End Sub
